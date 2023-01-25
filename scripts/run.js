@@ -1,24 +1,26 @@
 const main = async () => {
 
-    const [owner, randomPerson]= await hre.ethers.getSigners();
-    const sigmaContractFactory = await hre.ethers.getContractFactory("sigmaPortal");
-    const sigmaContract = await sigmaContractFactory.deploy();
-    await sigmaContract.deployed();
-
-    console.log("Contract deployed to:", sigmaContract.address);
-    console.log("Contract deployed by:", owner.address);
-
-    await sigmaContract.getTotalSigmas();
-
-    const firstsigmaTxn = await sigmaContract.sigma();
-    await firstsigmaTxn.wait();
+  const sigmaContractFactory = await hre.ethers.getContractFactory("sigmaPortal");
+  const sigmaContract = await sigmaContractFactory.deploy();
+  await sigmaContract.deployed();
+  console.log("Contract addy:", sigmaContract.address);
     
-    await sigmaContract.getTotalSigmas();
+  let sigmaCount;
+  sigmaCount = await sigmaContract.getTotalSigmas();
+  console.log(sigmaCount.toNumber());
 
-    const secondsigmaTxn = await sigmaContract.connect(randomPerson).sigma();
-    await secondsigmaTxn.wait();
+  /**
+   * Let's send a few sigmas!
+   */
+  let sigmaTxn = await sigmaContract.sigma("A message!");
+  await sigmaTxn.wait(); // Wait for the transaction to be mined
 
-    await sigmaContract.getTotalSigmas();
+  const [_, randomPerson] = await hre.ethers.getSigners();
+  sigmaTxn = await sigmaContract.connect(randomPerson).sigma("Another message!");
+  await sigmaTxn.wait(); // Wait for the transaction to be mined
+
+  let allSigmas = await sigmaContract.getAllSigmas();
+  console.log(allSigmas);
 };
   
   const runMain = async () => {
